@@ -1,4 +1,4 @@
-package com.example.rainbowgame;
+package com.example.rain;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -20,8 +20,6 @@ public class Circle {
         Paint p = new Paint();
         p.setColor(color);
         canvas.drawCircle(x, y, radius, p);
-        p.setColor(Color.BLACK);
-        canvas.drawText(Integer.toString(n), x, y, p);
     }
 
     public boolean inCircle(float point_x, float point_y) {
