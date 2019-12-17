@@ -1,4 +1,4 @@
-package com.example.rainbowgame;
+package com.example.rain;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;

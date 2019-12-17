@@ -1,8 +1,9 @@
-package com.example.rainbowgame;
+package com.example.rain;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -16,76 +17,91 @@ public class Game extends View {
     ArrayList<Circle> circles = new ArrayList<>();
     Rect rect;
     int num_circ, width, height;
-    boolean visited;
+    boolean active;
 
     public Game(Context context) {
         super(context);
         activity = (MainActivity) context;
-        this.width = getWidth();
-        this.height = getHeight();
-        visited = false;
-    }
-
-    public void onDraw(Canvas canvas) {
-        for (int i = 0; i < num_circ; i++) {
-            circles.get(i).draw(canvas);
-        }
-        rect = new Rect(0, height - 300, width, height, circles.get(0).color);
-        rect.draw(canvas);
+        active = false;
+        start();
     }
 
     public void start(){
+        Log.d("SIZES", "w = " + String.valueOf(width) + "h = " + String.valueOf(height));
         float x, y;
-//        Random rand = new Random(System.currentTimeMillis());
-//        num_circ = 5 + rand.nextInt(6);
-        num_circ = 1;
+        Random rand = new Random(System.currentTimeMillis());
+        num_circ = 5 + rand.nextInt(6);
         for (int i = 0; i < num_circ; i++) {
-            x = (float) 100;
-            y = (float) 100;
-            int red = 255;
-            int green = 16;
-            int blue = 125;
-            float radius = 36;
+            x = 0 + (float) Math.random() * 1000;
+            y = 0 + (float) Math.random() * (1000/2);
+            int red = 1 + rand.nextInt(256);
+            int green = 1 + rand.nextInt(256);
+            int blue = 1 + rand.nextInt(256);
+            float radius = 30 + rand.nextInt(101);
             Circle new_circ = new Circle(x, y, radius, i, Color.rgb(red, green, blue));
             circles.add(new_circ);
         }
     }
 
+    public void onDraw(Canvas canvas) {
+        width =  getWidth();
+        height =  getHeight();
+        for (int i = 0; i < num_circ; i++) {
+            circles.get(i).draw(canvas);
+        }
+        rect = new Rect(0, height - 300, width, height, Color.YELLOW);
+        rect.draw(canvas);
+    }
+
+
     public boolean onTouchEvent(MotionEvent event) {
         int current_circ = -1;
         int done_circ = 0;
-        if (event.getAction() == MotionEvent.ACTION_DOWN){
-            for (int i = 0; i < num_circ; i++) {
-                if (circles.get(i).inCircle(event.getX(), event.getY())) {
-                    current_circ = i;
-                    visited = true;
-                    break;
+        float dX = 0, dY = 0;
+        int lastAction;
+
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                for (int i = 0; i < num_circ; i++) {
+                    if (circles.get(i).inCircle(event.getX(), event.getY())) {
+                        dX = circles.get(i).x - event.getRawX();
+                        dY = circles.get(i).y - event.getRawY();
+                        current_circ = i;
+                        active = true;
+                        lastAction = MotionEvent.ACTION_DOWN;
+                        break;
+                    }
                 }
-            }
-        }
 
-        if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            circles.get(current_circ).x = event.getX();
-            circles.get(current_circ).y = event.getY();
-        }
+                break;
 
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (rect.inRect(event.getX(), event.getY()) && circles.get(current_circ).color == rect.color) {
-                done_circ++;
-                circles.remove(circles.get(current_circ));
-                if (done_circ == num_circ) {
-                    Toast end = Toast.makeText(activity, "Вы собрали все шары!", Toast.LENGTH_LONG);
-                    end.show();
-                    done_circ = 0;
-                    circles.clear();
-                    start();
+            case MotionEvent.ACTION_MOVE:
+                circles.get(current_circ).x = event.getRawX() + dX;
+                circles.get(current_circ).y = event.getRawY() + dY;
+                lastAction = MotionEvent.ACTION_MOVE;
+                break;
+
+            case MotionEvent.ACTION_UP:
+                if (rect.inRect(event.getX(), event.getY()) && circles.get(current_circ).color == rect.color) {
+                    done_circ++;
+                    circles.remove(circles.get(current_circ));
+                    if (done_circ == num_circ) {
+                        Toast end = Toast.makeText(activity, "Вы собрали все шары!", Toast.LENGTH_LONG);
+                        end.show();
+                        done_circ = 0;
+                        circles.clear();
+                        start();
+                    }
+                    current_circ = -1;
+
                 }
-                current_circ = -1;
+                invalidate();
+                break;
 
-            }
-            invalidate();
-            return true;
+            default:
+                return false;
         }
+
         return false;
     }
 }

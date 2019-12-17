@@ -1,4 +1,4 @@
-package com.example.rainbowgame;
+package com.example.rain;
 
 import androidx.appcompat.app.AppCompatActivity;
 
